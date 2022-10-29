@@ -1,0 +1,65 @@
+IN 10H          
+;1A)
+LXI H,0900H   
+MVI A,00H       
+
+ITERATION:
+	MOV M,A         
+	CPI FFH         
+	JZ CONTINUE     
+                       
+	INR A            
+	INX H            
+	JMP ITERATION    
+
+;1B)
+CONTINUE:
+	LXI H,09FFH 
+	LXI B,0000H 
+
+NEXT_NUMBER:     
+	MOV A,M 
+       MVI D,09H 
+
+NEXT_BIT:
+	DCR D       
+       JZ NEXT_ADDR      
+       RRC         
+       JNC NEXT_BIT 
+       INX B       
+       JMP NEXT_BIT 
+
+NEXT_ADDR:    
+       DCR L  
+       JNZ NEXT_NUMBER 
+
+LXI H,0A08H
+MOV M,B
+LXI H,0A09H
+MOV M,C   
+          
+;1C)
+MVI D,00H        
+LXI H,09FFH      
+
+CHECK_10: 
+        MOV A,M     
+        CPI 10H      
+        JNC CHECK_60   
+        JMP NEXT_NUM
+
+CHECK_60: 
+        CPI 61H      
+        JC COUNTER    
+        JMP NEXT_NUM 
+
+COUNTER: 
+        INR D         
+
+NEXT_NUM: 
+        DCR L      
+        JNZ CHECK_10 
+
+LXI H,0A0CH
+MOV M,D
+END

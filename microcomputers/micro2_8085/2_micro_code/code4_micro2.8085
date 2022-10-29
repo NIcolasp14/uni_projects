@@ -1,0 +1,51 @@
+IC:
+
+	LDA 2000H     ; (A) <- A3B3 A2B2 A1B1 A0B0 (INPUT)
+	MOV B,A       ; (B) <- A3B3 A2B2 A1B1 A0B0 
+	RRC           ; (A) <- B0A3 B3A2 B2A1 B1A0 
+	MOV C,A       ; (C) <- B0A3 B3A2 B2A1 B1A0 
+
+	XRA B         ; (A) <- XY3 XY2 XY1 XY0 , where Yi = XOR(Ai,Bi), i=0,1,2,3
+	RRC           ; (A) <- Y0X Y3X Y2X Y1X
+	MOV D,A       ; (D) <- Y0X Y3X Y2X Y1X
+	ANI 02H       ; (A) <- 00  00  00  Y10
+	MOV E,A       ; (E) <- 00  00  00  X10 , Y1 == X1, E contains A1 XOR B1 in correct position
+	MOV A,D       ; (A) <- Y0X Y3X Y2X Y1X
+	RLC           ; (A) <- XY3 XY2 XY1 XY0
+	ANI 01H       ; (A) <- 00  00  00  0Y0
+	MOV D,A       ; (D) <- 00  00  00  0Y0
+
+	MOV A,C       ; (A) <- B0A3 B3A2 B2A1 B1A0 
+	ANA B         ; (A) <- B0A3 B3A2 B2A1 B1A0 AND A3B3 A2B2 A1B1 A0B0 (B AND A==C) 
+	MOV C,A       ; (C) <- XZ3 XZ2 XZ1 XZ0, where Zi = AND(Ai,Bi), i=0,1,2,3
+	RRC           ; (A) <- Z0X Z3X Z2X Z1X
+	RRC           ; (A) <- XZ0 XZ3 XZ2 XZ1
+	ANI 04H       ; (A) <- 00  00  0Z2  00 
+	MOV B,A       ; (B) <- 00  00  0Z2  00 , B contains A2 AND B2 in correct position
+	
+	MOV A,C       ; (A) <- XZ3 XZ2 XZ1 XZ0  
+	RRC           ; (A) <- Z0X Z3X Z2X Z1X
+	RRC           ; (A) <- XZ0 XZ3 XZ2 XZ1
+	RRC	       ; (A) <- Z1X Z0X Z3X Z2X 
+	ANI 08H       ; (A) <- 00  00  Z30  00
+	MOV C,A       ; (C) <- 00  00  X30  00 , Z3 == X3, C contains A3 AND B3 in correct position
+	
+	MOV A,C       ; (A) <- 00  00  Z30  00  
+	RRC           ; (A) <- 00  00  0Z3  00
+	ORA B         ; (A) <- 00  00  0Z3  00 OR 00  00  0Z2  00  (B OR A) == ((A2 AND B2) OR (A3 AND B3))
+	MOV B,A       ; (B) <- 00  00  0X2  00 , X2, B contains ((A2 AND B2) OR (A3 AND B3)) 
+	
+	MOV A,E       ; (A) <- 00  00  00  X10
+	RRC           ; (A) <- 00  00  00  0X1
+	XRA D         ; (A) <- 00  00  00  0X1 XOR 00  00  00  0Y0 (D XOR E) == ((A0 XOR B0) XOR (A1 XOR B1))
+	MOV D,A       ; (D) <- 00  00  00  0X0 , X0, D contains ((A0 XOR B0) XOR (A1 XOR B1)) 
+	
+	MOV A,C       ; 0 0 0 0 X3  0  0  0
+	ADD B         ; 0 0 0 0 ×3 ×2  0  0
+	ADD E         ; 0 0 0 0 ×3 ×2 ×1  0
+	ADD D         ; 0 0 0 0 ×3 ×2 ×1 ×0
+	
+	CMA           ; (A) <- (A') (Reverse logic)
+	STA 3000H     ; OUTPUT
+	JMP IC        ; NEW INPUT
+END

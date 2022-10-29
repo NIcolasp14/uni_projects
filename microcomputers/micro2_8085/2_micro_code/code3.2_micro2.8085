@@ -1,0 +1,64 @@
+IN 10H
+MVI E,00H
+MVI A,00H
+MVI C,00H
+
+; Προσδιορισμός εισόδου και ανακατεύθυνση στην αντίστοιχη ετικέτα
+IN:
+	CALL KIND
+       CMP E
+       JZ IN
+       MOV E,A
+	CPI 09H
+       JNC IN     ; >8
+       CPI 00H
+       JZ IN      ; ==0
+
+; Επιθυμητές περιπτώσεις
+       CPI 01H
+       JZ ONE
+       CPI 02H
+       JZ TWO
+       CPI 03H
+       JZ THREE
+       CPI 04H
+       JZ FOUR
+       CPI 05H
+       JZ FIVE
+       CPI 06H
+       JZ SIX
+       CPI 07H
+       JZ SEVEN
+       MVI A,00H
+       CMA
+       JMP END
+        
+ONE: MVI A,01H
+     JMP END
+
+TWO: MVI A,03H
+     JMP END
+
+THREE: MVI A,07H
+       JMP END
+
+FOUR: MVI A,0FH
+      JMP END
+
+FIVE: MVI A,1FH
+      JMP END
+
+SIX: MVI A,3FH
+     JMP END
+
+SEVEN: MVI A,7FH
+       JMP END
+
+END:   RRC
+       ADI 80H
+
+; Output
+SHOW:  STA 3000H
+	JMP IN
+
+END

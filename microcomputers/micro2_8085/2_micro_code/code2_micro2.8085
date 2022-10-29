@@ -1,0 +1,52 @@
+LXI B,0140H	          ; values for delay were defined via trial and error
+
+OFF1:			
+	LDA 2000H
+	ANI 80H		
+	CPI 80H		
+	JZ ON1		
+
+	JMP OFF1	
+
+ON1:		
+	LDA 2000H
+	ANI 80H
+	CPI 00H 	
+	JZ RESTART		
+	JMP ON1		
+
+RESTART:
+	LXI D,FFFFH      ; Useful for repeating the delay of the command CALL DELB
+	MVI L,00H        ; FLAG
+
+OFF2:			
+	LDA 2000H
+	ANI 80H
+	CPI 80H			
+	JZ ON2		
+	MVI A,00H	
+	STA 3000H
+	DCR D
+	JNZ STOP 
+	MVI A,FFH	
+	STA 3000H
+	MOV M,L	
+	JZ OFF1
+	JMP ON1
+STOP:
+	CALL DELB
+	CALL DELB
+	JMP OFF2
+
+ON2:		
+	INR L	
+	LDA 2000H
+	ANI 80H
+	CPI 00H 	
+	JZ RESTART      	
+	DCR D
+	INR D
+	JNZ OFF2
+	JMP ON1
+
+END
